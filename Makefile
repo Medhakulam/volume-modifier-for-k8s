@@ -1,13 +1,13 @@
 PROTO_FILE=modify.proto
 PROTO_GENERATED_FILES_PATH=pkg/rpc
 VERSION="v0.1.3"
-LDFLAGS="-X 'main.version=$(VERSION)'"
+LDFLAGS="-X 'main.version=$(VERSION)' -linkmode=external -extldflags=-static"
 .PHONY: all
 all: build
 
 .PHONY: build
 build:
-	go build -o bin/main -ldflags ${LDFLAGS} cmd/main.go
+	CGO_ENABLED=1 GOEXPERIMENT=boringcrypto go build -o bin/main -ldflags ${LDFLAGS} cmd/main.go
 
 .PHONY: proto
 proto:
@@ -28,7 +28,7 @@ check: check-proto
 .PHONY: linux/$(ARCH) bin/volume-modifier-for-k8s
 linux/$(ARCH): bin/volume-modifier-for-k8s
 bin/volume-modifier-for-k8s: | bin
-	CGO_ENABLED=0 GOOS=linux GOARCH=$(ARCH) go build -mod=mod -ldflags ${LDFLAGS} -o bin/volume-modifier-for-k8s ./cmd
+	CGO_ENABLED=1 GOEXPERIMENT=boringcrypto GOOS=linux GOARCH=$(ARCH) go build -mod=mod -ldflags ${LDFLAGS} -o bin/volume-modifier-for-k8s ./cmd
 
 .PHONY: check-proto
 check-proto:
